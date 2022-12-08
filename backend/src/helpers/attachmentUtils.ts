@@ -15,6 +15,7 @@ const bucketName = process.env.ATTACHMENT_S3_BUCKET;
 const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
 
 export function addAttachment(id: string): string {
+  logger.info("addAtachment: ", id)
   return s3.getSignedUrl('putObject', {
     Bucket: bucketName,
     Key: id,
@@ -22,12 +23,12 @@ export function addAttachment(id: string): string {
   })
 }
 
-export function getDownloadUrl(imageId: string): string {
-  return this.s3.getSignedUrl('getObject', {
-    Bucket: this.bucketName,
-    Key: imageId
-  })
-}
+// export function getDownloadUrl(imageId: string): string {
+//   return s3.getSignedUrl('getObject', {
+//     Bucket: bucketName,
+//     Key: imageId
+//   })
+// }
 
 export async function deleteAttachment(id: string) {
   try {

@@ -18,7 +18,8 @@ function createDynamoDBClient() {
 export class TodosAccess {
     constructor(
         private readonly docClient: DocumentClient = createDynamoDBClient(),
-        private readonly todoTable = process.env.TODOS_TABLE) 
+        private readonly todoTable = process.env.TODOS_TABLE,
+        private readonly attachmentBucket = process.env.ATTACHMENT_S3_BUCKET) 
     {
     }
 
@@ -81,13 +82,14 @@ export class TodosAccess {
 
     async updateAttachment(userId: string, todoId: string): Promise<void> {
         await this.docClient.update({
-          TableName: this.todoTable,
-          Key: { userId, todoId },
-          UpdateExpression: "set attachmentUrl=:a",
-          ExpressionAttributeValues: {
-            ":a": todoId
-          },
-          ReturnValues: "NONE"
-        }).promise()
+            TableName: this.todoTable,
+            Key: { userId, todoId  },
+            UpdateExpression: 'set #attachmentUrl = :attachmentUrl',
+            ExpressionAttributeNames: { '#attachmentUrl': 'attachmentUrl' },
+            ExpressionAttributeValues: {
+              ':attachmentUrl': `https://${this.attachmentBucket}.s3.amazonaws.com/${todoId}`
+            },
+            ReturnValues: "UPDATED_NEW"
+          }).promise();
       }
 }
