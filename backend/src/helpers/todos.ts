@@ -2,12 +2,20 @@ import { TodosAccess } from './todosAcess'
 import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
+import { addAttachment, deleteAttachment, getDownloadUrl } from './attachmentUtils'
 import * as uuid from 'uuid'
 
 const todoAccess = new TodosAccess()
 
 export async function getTodos(userId: string): Promise<TodoItem[]> {
-  return todoAccess.getAllTodos(userId)
+  const items = await todoAccess.getAllTodos(userId)
+
+  for (let item of items) {
+    if (!!item['attachmentUrl'])
+      item['attachmentUrl'] = getDownloadUrl(item['attachmentUrl'])
+  }
+
+  return items
 }
 
 export async function getTodo(userId: string, todoId: string): Promise<TodoItem> {
@@ -19,7 +27,14 @@ export async function updateTodo(userId: string, id: string, payload: UpdateTodo
 }
 
 export async function deleteTodo(userId: string, id: string): Promise<void> {
+  await deleteAttachment(id)
   return todoAccess.deleteTodo(userId, id)
+}
+
+export async function createAttachmentPresignedUrl(userId: string, todoId: string): Promise<string> {
+  const uploadUrl = addAttachment(todoId)
+  await todoAccess.updateAttachment(userId, todoId)
+  return uploadUrl
 }
 
 export async function createTodo(

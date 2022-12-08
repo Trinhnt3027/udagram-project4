@@ -8,28 +8,35 @@ const logger = createLogger('attachmentUtils')
 
 // TODO: Implement the fileStogare logic
 const s3 = new XAWS.S3({
-    signatureVersion: 'v4'
-  });
-  
-  const bucketName = process.env.ATTACHMENT_S3_BUCKET;
-  const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
-  
-  export function addAttachment(id: string): string {
-    return s3.getSignedUrl('putObject', {
-      Bucket: bucketName,
-      Key: id,
-      Expires: urlExpiration
-    })
-  }
-  
-  export async function deleteAttachment(id: string)  {      
-    try {  
+  signatureVersion: 'v4'
+});
+
+const bucketName = process.env.ATTACHMENT_S3_BUCKET;
+const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
+
+export function addAttachment(id: string): string {
+  return s3.getSignedUrl('putObject', {
+    Bucket: bucketName,
+    Key: id,
+    Expires: urlExpiration
+  })
+}
+
+export function getDownloadUrl(imageId: string): string {
+  return this.s3.getSignedUrl('getObject', {
+    Bucket: this.bucketName,
+    Key: imageId
+  })
+}
+
+export async function deleteAttachment(id: string) {
+  try {
     await s3.deleteObject({
-        Bucket:bucketName,
-        Key: id
+      Bucket: bucketName,
+      Key: id
     }).promise()
-    }
-    catch (err) {
-        logger.error("Error deleting: " + JSON.stringify(err))
-    }
+  }
+  catch (err) {
+    logger.error("Error deleting: " + JSON.stringify(err))
+  }
 }

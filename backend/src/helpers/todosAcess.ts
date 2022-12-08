@@ -78,4 +78,16 @@ export class TodosAccess {
             ReturnValues: "UPDATED_NEW"
         }).promise();
     }
+
+    async updateAttachment(userId: string, todoId: string): Promise<void> {
+        await this.docClient.update({
+          TableName: this.todoTable,
+          Key: { userId, todoId },
+          UpdateExpression: "set attachmentUrl=:a",
+          ExpressionAttributeValues: {
+            ":a": todoId
+          },
+          ReturnValues: "NONE"
+        }).promise()
+      }
 }
